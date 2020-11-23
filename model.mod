@@ -1,5 +1,5 @@
 #Sets
-set TASKS;                       #(V) The set of tasks; indexed by (i,j)
+set TASKS;                       #(V) The set of tasks; indexed by (i or j)
 set DEF_STATIONS;                #(KD) The set of definite stations
 set PROB_STATIONS;               #(KP) The set of probable stations
 set STATIONS;                    #(K) The set of all possible stations (Union of DEF_STATIONS and PROB_STATIONS); indexed by (k)
