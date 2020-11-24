@@ -1,13 +1,13 @@
 #Sets
-set TASKS;                       #(V) The set of tasks; indexed by (i or j)
-set DEF_STATIONS;                #(KD) The set of definite stations
-set PROB_STATIONS;               #(KP) The set of probable stations
-set STATIONS;                    #(K) The set of all possible stations (Union of DEF_STATIONS and PROB_STATIONS); indexed by (k)
-set RELATIONS;                   #(R) The set of all direct precednece relations
-set PREDECESSORS {TASKS};        #(P_i) The set of all direct and indirect predecessors for task i
-set SUCCESSORS {TASKS};          #(F_i) The set of all direct and indirect successors for task i
-set FEASIBLE_STATIONS {TASKS};   #(FS_i) The set of stations to which task i is feasibly assignable
-set FEASIBLE_TASKS {STATIONS};   #(FT_k) The set of tasks that are feasibly assignable to station k
+set TASKS;                                                #(V) The set of tasks; indexed by (i or j)
+set DEF_STATIONS;                                         #(KD) The set of definite stations
+set PROB_STATIONS;                                        #(KP) The set of probable stations
+set STATIONS = DEF_STATIONS union PROB_STATIONS;          #(K) The set of all possible stations (Union of DEF_STATIONS and PROB_STATIONS); indexed by (k)
+set RELATIONS;                                            #(R) The set of all direct precednece relations
+set PREDECESSORS {TASKS};                                 #(P_i) The set of all direct and indirect predecessors for task i
+set SUCCESSORS {TASKS};                                   #(F_i) The set of all direct and indirect successors for task i
+set FEASIBLE_STATIONS {TASKS};                            #(FS_i) The set of stations to which task i is feasibly assignable
+set FEASIBLE_TASKS {STATIONS};                            #(FT_k) The set of tasks that are feasibly assignable to station k
 
 #Parameters
 param num_tasks;                   #(n) The number of tasks
