@@ -19,14 +19,26 @@ param lowest_cycle_time;           #(c-underlined) The lower bound on the cycle 
 param highest_cycle_time;          #(c-bar) The upper bound on the cycle time
 param lowest_num_stations;         #(m-underlined) The lower bound on the number of stations
 param highest_num_stations;        #(m-bar) The upper bound on the number of stations
-param pred_exec_time {TASK};       #(tP_i) The total execution time for all predecessors of task i
-param succ_exec_time {TASK};       #(tF_i) The total execution time for all successors of task i
-param earliest_station {TASK};     #(E_i) The earliest possible station for task i
-param latest_station {TASK};       #(L_i) The latest possible station for task i
+param pred_exec_time {TASKS};       #(tP_i) The total execution time for all predecessors of task i
+param succ_exec_time {TASKS};       #(tF_i) The total execution time for all successors of task i
+param earliest_station {TASKS};     #(E_i) The earliest possible station for task i
+param latest_station {TASKS};       #(L_i) The latest possible station for task i
+param c;
 
 #Variables
 var TaskToStation {TASKS, STATIONS} binary;     #(x_ik) 1 if task i assigned to station k, 0 otherwise
-var IdleTime {STATION} >= 0;                    #(delta_k) The idle time for station k
+var IdleTime {STATIONS} >= 0;                    #(delta_k) The idle time for station k
 var StationUsed {STATIONS} binary;              #(u_k) 1 if any task is assigned to station k, 0 otherwise
 
 #Constraints
+subject to One {i in TASKS}:sum{k in FEASIBLE_STATIONS[i]}TaskToStation[i, k]=1; #6 each task can only be given to one station
+subject to Two {i in RELATIONS, j in RELATIONS}:sum{k in FEASIBLE_STATIONS[i]}k*TaskToStation[i, k]<=sum{k in FEASIBLE_STATIONS[j]}k*TaskToStation[i, k]; #7
+subject to Three {i in TASKS, k in FEASIBLE_STATIONS[i]}:TaskToStation[i, k]=1||0; #10
+subject to Four {k in PROB_STATIONS}:StationUsed[k]=1||0; #11
+subject to Five :lowest_cycle_time<=c<=highest_cycle_time; #13
+subject to Six {k in DEF_STATIONS}:sum{i in FEASIBLE_TASKS[k]}exec_time[i]*TaskToStation[i, k]+IdleTime[k]=c; #15
+subject to Seven {k in PROB_STATIONS}:sum{i in FEASIBLE_TASKS[k]}exec_time[i]*TaskToStation[i, k]+IdleTime[k]=c; #16
+subject to Eight {k in PROB_STATIONS}:sum{i in FEASIBLE_TASKS[k]}exec_time[i]*TaskToStation[i, k]+IdleTime[k]>=c+highest_cycle_time*(StationUsed[k]-1); #17
+subject to Nine {k in PROB_STATIONS}:sum{i in FEASIBLE_TASKS[k]}exec_time[i]*TaskToStation[i, k]+IdleTime[k]<=highest_cycle_time*StationUsed[k]; #18
+subject to Ten {k in PROB_STATIONS}:StationUsed[k+1]<=StationUsed[k]; #19
+subject to Eleven {k in STATIONS}:IdleTime[k]>=0; #20
