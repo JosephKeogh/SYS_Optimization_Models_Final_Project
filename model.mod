@@ -23,22 +23,22 @@ param pred_exec_time {TASKS};       #(tP_i) The total execution time for all pre
 param succ_exec_time {TASKS};       #(tF_i) The total execution time for all successors of task i
 param earliest_station {TASKS};     #(E_i) The earliest possible station for task i
 param latest_station {TASKS};       #(L_i) The latest possible station for task i
-param c;
 
 #Variables
 var TaskToStation {TASKS, STATIONS} binary;     #(x_ik) 1 if task i assigned to station k, 0 otherwise
 var IdleTime {STATIONS} >= 0;                    #(delta_k) The idle time for station k
 var StationUsed {STATIONS} binary;              #(u_k) 1 if any task is assigned to station k, 0 otherwise
+var CycleTime >= 0;
+
+#Objective function
+minimize Waste : (highest_num_stations - lowest_num_stations + 1) * sum {k in STATIONS} (IdleTime[k]) - sum{k in PROB_STATIONS} StationUsed[k];
 
 #Constraints
-subject to One {i in TASKS}:sum{k in FEASIBLE_STATIONS[i]}TaskToStation[i, k]=1; #6 each task can only be given to one station
-subject to Two {i in RELATIONS, j in RELATIONS}:sum{k in FEASIBLE_STATIONS[i]}k*TaskToStation[i, k]<=sum{k in FEASIBLE_STATIONS[j]}k*TaskToStation[i, k]; #7
-subject to Three {i in TASKS, k in FEASIBLE_STATIONS[i]}:TaskToStation[i, k]=1||0; #10
-subject to Four {k in PROB_STATIONS}:StationUsed[k]=1||0; #11
-subject to Five :lowest_cycle_time<=c<=highest_cycle_time; #13
-subject to Six {k in DEF_STATIONS}:sum{i in FEASIBLE_TASKS[k]}exec_time[i]*TaskToStation[i, k]+IdleTime[k]=c; #15
-subject to Seven {k in PROB_STATIONS}:sum{i in FEASIBLE_TASKS[k]}exec_time[i]*TaskToStation[i, k]+IdleTime[k]=c; #16
-subject to Eight {k in PROB_STATIONS}:sum{i in FEASIBLE_TASKS[k]}exec_time[i]*TaskToStation[i, k]+IdleTime[k]>=c+highest_cycle_time*(StationUsed[k]-1); #17
-subject to Nine {k in PROB_STATIONS}:sum{i in FEASIBLE_TASKS[k]}exec_time[i]*TaskToStation[i, k]+IdleTime[k]<=highest_cycle_time*StationUsed[k]; #18
-subject to Ten {k in PROB_STATIONS}:StationUsed[k+1]<=StationUsed[k]; #19
-subject to Eleven {k in STATIONS}:IdleTime[k]>=0; #20
+subject to Assignment {i in TASKS}: sum{k in FEASIBLE_STATIONS[i]} TaskToStation[i, k] = 1; #6 each task can only be given to one station
+subject to Precedence {(i,j) in RELATIONS}: sum{k in FEASIBLE_STATIONS[i]} k * TaskToStation[i, k] <= sum{k in FEASIBLE_STATIONS[j]} k * TaskToStation[j, k];  #7 Imposes precedence relations; Station number that task i assigned to <= station number task j assigned to
+subject to Cycle: lowest_cycle_time <= CycleTime <= highest_cycle_time; #13 Restrict cycle time variable to between lower and upper bounds on cycle time
+subject to TimingA {k in DEF_STATIONS}: sum{i in FEASIBLE_TASKS[k]} (exec_time[i] * TaskToStation[i, k]) + IdleTime[k] = CycleTime; #15 For each definite station, execution time of all assigned tasks + idle time = cycle time
+subject to TimingB {k in PROB_STATIONS}: sum{i in FEASIBLE_TASKS[k]} (exec_time[i] * TaskToStation[i, k]) + IdleTime[k] <= CycleTime; #16 For probable stations, execution time for all assigned tasks + idle time <= cycle time
+subject to TimingC {k in PROB_STATIONS}: sum{i in FEASIBLE_TASKS[k]} (exec_time[i] * TaskToStation[i, k]) + IdleTime[k] >= CycleTime + highest_cycle_time * (StationUsed[k] - 1); #17 Long explanation; see PPT
+subject to TimingD {k in PROB_STATIONS}: sum{i in FEASIBLE_TASKS[k]} (exec_time[i] * TaskToStation[i, k]) + IdleTime[k] <= highest_cycle_time * StationUsed[k]; #18
+subject to StationUse {k in PROB_STATIONS}: StationUsed[k+1] <= StationUsed[k]; #19

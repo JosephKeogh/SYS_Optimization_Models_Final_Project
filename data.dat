@@ -516,7 +516,7 @@ set SUCCESSORS [7] :=
 22
 23
 24
-25;
+25 ;
 
 set SUCCESSORS [8] :=
 9
